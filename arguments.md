@@ -117,18 +117,30 @@ class User::Update < UpdateRecordService
 end
 ```
 
-{% hint style="info" %}
-To remove inherited arguments, use `remove_arg :argument_name`.
-{% endhint %}
+### Removing Inherited Arguments
+
+To remove an inherited argument, use `remove_arg`:
+
+```ruby
+class BaseService < ApplicationService
+  arg :current_user, type: User
+  arg :audit_log, type: :boolean, default: true
+end
+
+class SystemTaskService < BaseService
+  # System tasks don't need a current_user
+  remove_arg :current_user
+end
+```
 
 ## Context Arguments
 
 Context arguments are automatically passed to all child services in the same context. Define them using the `context` option. This is useful for passing objects like `current_user`.
 
-You'll learn more about this in context docs.
+Learn more about context in the [Context documentation](context.md).
 
 ```ruby
-class ApplicationService < LightService::Base
+class ApplicationService < Light::Services::Base
   arg :current_user, type: User, optional: true, context: true
 end
 ```

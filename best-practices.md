@@ -146,3 +146,8 @@ class ApplicationService < Light::Services::Base
 end
 ```
 
+## What's Next?
+
+Explore practical recipes for common patterns:
+
+[Next: Recipes](recipes.md)

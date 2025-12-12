@@ -2,10 +2,7 @@
 
 In this recipe we'll create top-level CRUD services to manage our records.
 
-\[Documentation in progress]
-
-This page is still in development and just shows the approach.
-This approach was tested in production for many years and saved us a lot of time and effort.
+This approach has been tested in production for many years and has saved significant time and effort.
 
 ## Why
 
@@ -241,7 +238,7 @@ class UpdateRecordService < ApplicationService
     assign_attributes = default_attributes
       .merge(params_attributes)
       .merge(attributes)
-      .merge(overridden_attributes)
+      .merge(override_attributes)
 
     record.assign_attributes(assign_attributes)
   end
@@ -521,3 +518,8 @@ module RequestConcern
 end
 ```
 
+## What's Next?
+
+Learn how to render service results cleanly in your controllers:
+
+[Next: Service Rendering](service-rendering.md)

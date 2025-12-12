@@ -61,14 +61,20 @@ end
 
 ## Type Validation
 
-\[In Development]
-
 You can specify the type of output using the `type` option. The output type will be validated when the service successfully completes.
 
 ```ruby
 class AI::Chat < ApplicationService
-  output :messages, type: :string, array: true
+  output :messages, type: Array
   output :cost, type: :float
+end
+```
+
+You can specify multiple allowed types using an array.
+
+```ruby
+class AI::Chat < ApplicationService
+  output :result, type: [String, Hash]
 end
 ```
 
@@ -79,6 +85,22 @@ Set default values for outputs using the `default` option. The default value wil
 ```ruby
 class AI::Chat < ApplicationService
   output :cost, default: 0.0
+end
+```
+
+## Removing Inherited Outputs
+
+When inheriting from a parent service, you can remove outputs using `remove_output`:
+
+```ruby
+class BaseReportService < ApplicationService
+  output :report
+  output :debug_info
+end
+
+class ProductionReportService < BaseReportService
+  # Don't expose debug info in production
+  remove_output :debug_info
 end
 ```
 

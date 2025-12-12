@@ -79,6 +79,26 @@ class User::Charge < ApplicationService
 end
 ```
 
+### Using Procs for Conditions
+
+You can also use Procs (lambdas) for inline conditions:
+
+```ruby
+class User::Charge < ApplicationService
+  arg :amount, type: :float
+
+  step :apply_discount, if: -> { amount > 100 }
+  step :charge
+  step :send_large_purchase_alert, if: -> { amount > 1000 }
+
+  # ...
+end
+```
+
+{% hint style="info" %}
+Using Procs can make simple conditions more readable, but for complex logic, prefer extracting to a method.
+{% endhint %}
+
 ## Inheritance
 
 Steps are inherited from parent classes, making it easy to build upon existing services.
@@ -165,11 +185,83 @@ class ParsePage < ApplicationService
 end
 ```
 
+## Early Exit with `done!`
+
+Use `done!` to stop executing remaining steps without adding an error. This is useful when you've completed the service's goal early and don't need to run subsequent steps.
+
+```ruby
+class User::FindOrCreate < ApplicationService
+  arg :email, type: :string
+
+  step :find_existing_user
+  step :create_user
+  step :send_welcome_email
+
+  output :user
+
+  private
+
+  def find_existing_user
+    self.user = User.find_by(email:)
+    done! if user # Skip remaining steps if user already exists
+  end
+
+  def create_user
+    self.user = User.create!(email:)
+  end
+
+  def send_welcome_email
+    # Only runs for newly created users
+    Mailer.welcome(user).deliver_later
+  end
+end
+```
+
+You can check if `done!` was called using `done?`:
+
+```ruby
+def some_step
+  done!
+  
+  # This code still runs within the same step
+  puts "Done? #{done?}" # => "Done? true"
+end
+
+def next_step
+  # This step will NOT run because done! was called
+end
+```
+
+{% hint style="info" %}
+`done!` only stops subsequent steps from running. Code after `done!` within the same step method will still execute.
+{% endhint %}
+
+## Removing Inherited Steps
+
+When inheriting from a parent service, you can remove steps using `remove_step`:
+
+```ruby
+class UpdateRecordService < ApplicationService
+  step :authorize
+  step :validate
+  step :update_record
+  step :send_notification
+end
+
+class InternalUpdate < UpdateRecordService
+  # Remove authorization for internal system updates
+  remove_step :authorize
+  remove_step :send_notification
+end
+```
+
 ## Retry Failed Steps
 
-\[In Development]
+{% hint style="warning" %}
+This feature is planned for a future release and is not yet implemented.
+{% endhint %}
 
-Steps can be retried a specified number of times before giving up, using the `retry` option.
+Steps will be able to be retried a specified number of times before giving up, using the `retry` option.
 
 ```ruby
 class ParsePage < ApplicationService

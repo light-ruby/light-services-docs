@@ -2,6 +2,38 @@
 
 In this section, we'll explore the core concepts of Light Services, which include **Arguments**, **Steps**, **Outputs**, **Context**, and **Errors**.
 
+## Service Execution Flow
+
+When you call `MyService.run(args)`, the following happens:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Service.run(args)                       │
+├─────────────────────────────────────────────────────────────┤
+│  1. Load default values for arguments and outputs            │
+│  2. Validate argument types                                  │
+├─────────────────────────────────────────────────────────────┤
+│  3. Begin database transaction (if use_transactions: true)   │
+│     ┌─────────────────────────────────────────────────────┐ │
+│     │  4. Execute steps in order                          │ │
+│     │     - Skip if condition (if:/unless:) not met       │ │
+│     │     - Stop if errors.break? is true                 │ │
+│     │     - Stop if done! was called                      │ │
+│     ├─────────────────────────────────────────────────────┤ │
+│     │  5. On error → Rollback transaction                 │ │
+│     │     On success → Commit transaction                 │ │
+│     └─────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────┤
+│  6. Run steps marked with always: true                       │
+│  7. Validate output types (if success)                       │
+│  8. Copy errors/warnings to parent service (if in context)   │
+├─────────────────────────────────────────────────────────────┤
+│  9. Return service instance                                  │
+│     - service.success? / service.failed?                     │
+│     - service.outputs / service.errors                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ## Arguments
 
 Arguments are the inputs provided to a service when it is invoked. They can be validated by type, assigned default values, and be designated as optional or required.

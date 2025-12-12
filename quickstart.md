@@ -73,9 +73,41 @@ service = GreetService.run(name: "John")
 service.greeted # => true
 ```
 
+### Check for Success or Failure
+
+```ruby
+service = GreetService.run(name: "John")
+
+if service.success?
+  puts "Greeting sent!"
+  puts service.greeted
+else
+  puts "Failed: #{service.errors.to_h}"
+end
+```
+
+### Raise on Error with `run!`
+
+Use `run!` when you want errors to raise exceptions instead of being collected:
+
+```ruby
+# This will raise Light::Services::Error if any errors are added
+service = GreetService.run!(name: "John")
+```
+
+This is equivalent to:
+
+```ruby
+service = GreetService.run({ name: "John" }, { raise_on_error: true })
+```
+
 {% hint style="info" %}
 Looks easy, right? But this is just the beginning. Light Services can do much more 🚀
 {% endhint %}
 
-[Next: Concepts](concepts.md)
+## What's Next?
+
+Learn how to configure Light Services for your application:
+
+[Next: Configuration](configuration.md)
 
